@@ -13,7 +13,7 @@ services:
     depends_on:
       - mongodb
     environment:
-      MONGO_URI: mongodb+srv://db_admin:admin@masters.yst0b.mongodb.net/flood_management_sys?retryWrites=true&w=majority&appName=Masters
+      MONGO_URI: 
 
   mongodb:
     image: mongo:6

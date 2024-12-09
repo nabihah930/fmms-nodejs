@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 const connectToDatabase = async () => {
     try {
         // TO-DO: Save constants to config file
-        const mongoURI = process.env.MONGO_URI || 'mongodb+srv://db_admin:admin@masters.yst0b.mongodb.net/flood_management_sys?retryWrites=true&w=majority&appName=Masters';
+        const mongoURI = process.env.MONGO_URI;
         await mongoose.connect(mongoURI);
         console.log('🟢 Connected to MongoDB 🟢');
     } catch (error) {
