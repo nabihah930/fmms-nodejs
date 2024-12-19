@@ -1,14 +1,14 @@
 import mongoose from 'mongoose';
 
-const connectToDatabase = async () => {
+export const connectDB = async () => {
     try {
-        // TO-DO: Save constants to config file
-        const mongoURI = process.env.MONGO_URI;
-        await mongoose.connect(mongoURI);
-        console.log('🟢 Connected to MongoDB 🟢');
+        await mongoose.connect('mongodb://mongo:27017/flood_management', {
+            useNewUrlParser: true,
+            useUnifiedTopology: true,
+        });
+        console.log('✅ MongoDB connected successfully.');
     } catch (error) {
-        console.error('🔴 Error connecting to MongoDB: ', error);
+        console.error('🔴 MongoDB connection error:', error.message);
+        process.exit(1);
     }
 };
-
-export default connectToDatabase;

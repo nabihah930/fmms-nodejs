@@ -1,4 +1,4 @@
-version: '3.8'
+#version: '3.8'
 
 services:
   app:
@@ -8,20 +8,54 @@ services:
     ports:
       - "3000:3000"
     volumes:
+      - ./src:/usr/src/app
       - .:/usr/src/app
       - /usr/src/app/node_modules
     depends_on:
       - mongodb
     environment:
-      MONGO_URI: 
+      MONGO_URI: mongodb://mongodb:27017/flood_management
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    container_name: zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
 
   mongodb:
     image: mongo:6
+    healthcheck:
+      test: ["CMD", "mongo", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     container_name: mongodb
     ports:
       - "27017:27017"
     volumes:
       - mongo-data:/data/db
+
+  soil-saturation-sensor:
+    build: .
+    command: ["node", "src/sensors/soilSaturationSensor.js"]
+    depends_on:
+      - kafka
+    networks:
+      - default
 
 volumes:
   mongo-data:

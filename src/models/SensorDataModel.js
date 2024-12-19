@@ -1,11 +1,10 @@
 import mongoose from 'mongoose';
 
 const sensorDataSchema = new mongoose.Schema({
-  type: { type: String, required: true },
-  value: { type: mongoose.Schema.Types.Mixed, required: true },
-  timestamp: { type: Date, default: Date.now },
-}, { collection: 'sensor_data' });
+    type: { type: String, required: true },
+    value: { type: Number, required: true },
+    timestamp: { type: Number, required: true },
+});
 
-const SensorDataModel = mongoose.model('SensorData', sensorDataSchema);
-
-export default SensorDataModel;
+const SensorData = mongoose.model('sensor_data', sensorDataSchema);
+export default SensorData;

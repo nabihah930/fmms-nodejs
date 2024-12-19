@@ -1,9 +1,9 @@
-import eventEmitter from "./eventEmitter.js";
+import mongoose from 'mongoose';
 
-const registerUser = (username, email) => {
-  console.log(`User ${username} registered successfully!`);
-  // Emit the event after user registration
-  eventEmitter.emit('userRegistered', { username, email });
-};
+const userRegistrationSchema = new mongoose.Schema({
+    username: { type: String, required: true },
+    email: { type: String, required: true },
+    timestamp: { type: Number, required: true },
+});
 
-export default registerUser;
+export const UserRegistration = mongoose.model('UserRegistration', userRegistrationSchema);
