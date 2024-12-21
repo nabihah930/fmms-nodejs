@@ -13,6 +13,7 @@
   "dependencies": {
     "event": "^1.0.0",
     "express": "^4.21.2",
+    "kafkajs": "^2.2.4",
     "mongodb": "^6.11.0",
     "mongoose": "^8.8.4",
     "nodemailer": "^6.9.16"

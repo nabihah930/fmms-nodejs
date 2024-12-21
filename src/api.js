@@ -24,6 +24,11 @@ app.get('/api/health', (req, res) => {
   res.status(200).json({ message: 'System is running', timestamp: new Date().toISOString() });
 });
 
+// System health check
+app.get('/', (req, res) => {
+  res.status(200).json({ message: 'System is running', timestamp: new Date().toISOString() });
+});
+
 // Start the server
 const startApiServer = () => {
   app.listen(PORT, () => {
