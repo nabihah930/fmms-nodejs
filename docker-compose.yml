@@ -14,7 +14,7 @@ services:
       - mongodb
       - kafka
     environment:
-      MONGO_URI:  mongodb+srv://db_admin:admin@masters.yst0b.mongodb.net/flood_management_sys?retryWrites=true&w=majority&appName=Masters
+      MONGO_URI:  mongodb://mongodb:27017/flood_management
     networks:
       - kafka-network
 
