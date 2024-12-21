@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 
+// Add region here and operational status
 const sensorDataSchema = new mongoose.Schema({
   type: { type: String, required: true },
   value: { type: mongoose.Schema.Types.Mixed, required: true },
