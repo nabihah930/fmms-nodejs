@@ -11,12 +11,12 @@ services:
       - .:/usr/src/app
       - /usr/src/app/node_modules
     depends_on:
-      - mongodb
-      - kafka
+      kafka:
+        condition: service_healthy
     environment:
       MONGO_URI:  mongodb://mongodb:27017/flood_management
     networks:
-      - kafka-network
+      - flood_network
 
   mongodb:
     image: mongo:6
@@ -26,7 +26,7 @@ services:
     volumes:
       - mongo-data:/data/db
     networks:
-     - kafka-network
+     - flood_network
 
   metabase:
     image: metabase/metabase:latest
@@ -51,20 +51,27 @@ services:
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
     depends_on:
       - zookeeper
+    healthcheck:
+      test: ["CMD", "nc", "-z", "kafka", "9092"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     networks:
-      - kafka-network
+      - flood_network
 
   zookeeper:
     image: confluentinc/cp-zookeeper:latest
+    container_name: zookeeper
     ports:
       - "2181:2181"
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
     networks:
-      - kafka-network
+      - flood_network
 
 networks:
-  kafka-network:
+  flood_network:
+    name: flood_network
     driver: bridge
 
 
