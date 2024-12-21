@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 
+// Maybe message too?
 const alertSchema = new mongoose.Schema({
   type: { type: String, required: true },
   value: { type: mongoose.Schema.Types.Mixed, required: true },

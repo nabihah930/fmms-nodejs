@@ -1,32 +1,33 @@
 import { kafka } from './kafka.js';
 
-const createTopics = async () => {
+const createTopics = async (batchSize = 100) => {
     try {
         const admin = kafka.admin();
         await admin.connect();
       
-        // Example: Create topics for each sensor type and region
+        //Create topics for each sensor type and region
         const sensorTypes = ['waterLevel', 'cumulativeRainfall', 'riverFlowVelocity', 'soilSaturation', 'windSpeedDirection'];
-        const regions = Array.from({ length: 750 }, (_, i) => `region_${i + 1}`);
+        const regions = Array.from({ length: 10 }, (_, i) => `region${i + 1}`);
       
         const topics = sensorTypes.flatMap(sensor =>
           regions.map(region => ({
-            topic: `${region}_${sensor}`,
-            numPartitions: 5, // Adjust partitions based on hardware
+            topic: `${region}${sensor}`,
+            numPartitions: 1, // Adjust partitions based on hardware
             replicationFactor: 1,
           }))
         );
-      
-        await admin.createTopics({
-          topics,
-        });
-      
-        console.log('🟢 Topics created successfully!');
+
+        for (let i = 0; i < topics.length; i += batchSize) {
+            const batch = topics.slice(i, i + batchSize);
+            await admin.createTopics({ topics: batch });
+            console.log(`✔ Created ${batch.length} topics`);
+        }
+        
+        console.log('✔✔ All Kafka Topics created successfully');
+        await admin.disconnect();
     } catch (error) {
         console.log('🔴 Error creating topics:', error.message);
-    } finally {
-        await admin.disconnect();
     }
 };
 
-createTopics().catch(console.error);
+export default createTopics;

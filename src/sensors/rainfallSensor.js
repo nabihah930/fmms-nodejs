@@ -3,8 +3,8 @@ import { producer } from '../kafka.js';
 
 const simulateRainfall = async () => {
     const cumulativeRainfall = (Math.random() * 5 + 0.1).toFixed(2);
-    const region = `region_${Math.floor(Math.random() * 750) + 1}`; // Random region for testing
-    const topic = `${region}_cumulativeRainfall`;
+    const region = `region${Math.floor(Math.random() * 10) + 1}`; // Random region for testing
+    const topic = `${region}cumulativeRainfall`;
 
     try {
         await producer.send({

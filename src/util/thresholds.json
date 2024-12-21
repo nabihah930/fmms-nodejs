@@ -3,6 +3,6 @@
     "cumulativeRainfall": 100,
     "riverFlowVelocity": 2.5,
     "soilSaturation": 75,
-    "windSpeed": 70
+    "windSpeedDirection": 70
 }
   

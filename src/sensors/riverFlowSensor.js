@@ -3,8 +3,8 @@ import { producer } from '../kafka.js';
 
 const simulateRiverFlow = async () => {
     const riverFlowVelocity = (Math.random() * 5 + 0.1).toFixed(2);
-    const region = `region_${Math.floor(Math.random() * 750) + 1}`; // Random region for testing
-    const topic = `${region}_riverFlowVelocity`;
+    const region = `region${Math.floor(Math.random() * 10) + 1}`; // Random region for testing
+    const topic = `${region}riverFlowVelocity`;
 
     try {
         await producer.send({

@@ -1,5 +1,5 @@
 import { producer } from '../kafka.js';
-import { isThresholdBreached } from '../thresholdChecker.js';
+import { isThresholdBreached } from '../thresholdEvaluator.js';
 import eventEmitter from '../eventEmitter.js';
 
 // Default: 5 minutes
@@ -7,12 +7,13 @@ let interval = 300000;
 
 const simulateWaterLevel = async () => {
   const waterLevel = (Math.random() * 10 + 1).toFixed(2);
-  const region = `region_${Math.floor(Math.random() * 750) + 1}`; // Random region for testing
-  const topic = `${region}_waterLevel`;
+  const region = `region${Math.floor(Math.random() * 10) + 1}`; // Random region for testing
+  const topic = `${region}waterLevel`
 
   // Check if water level exceeds threshold
   const breached = isThresholdBreached('waterLevel', parseFloat(waterLevel));
 
+  console.log(`\nTopic: ${topic} - Breached: ${breached}\n`);
   // Adjust frequency based on threshold breach
   if (breached && interval !== 120000) {
     interval = 120000;
@@ -48,7 +49,7 @@ const simulateWaterLevel = async () => {
 
     console.log(`✔ Sent water level data to Kafka topic ${topic}`);
   } catch (error) {
-    console.error('🔴 Error sending data to Kafka topic:', error.message);
+    console.error(`🔴 Error sending data to Kafka topic: ${topic}\nError: `, error.message);
   }
 };
 
