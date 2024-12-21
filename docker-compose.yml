@@ -1,61 +1,279 @@
+# #version: '3.8'
+
+# services:
+#   app:
+#     build:
+#       context: .
+#     container_name: flood_management_app
+#     ports:
+#       - "3000:3000"
+#     volumes:
+#       - ./src:/usr/src/app
+#       - .:/usr/src/app
+#       - /usr/src/app/node_modules
+#     depends_on:
+#       - mongodb
+#     environment:
+#       MONGO_URI: mongodb://mongodb:27017/flood_management
+#     # deploy:
+#     #   replicas: 3
+
+#   zookeeper:
+#     image: confluentinc/cp-zookeeper:latest
+#     container_name: zookeeper
+#     environment:
+#       ZOOKEEPER_CLIENT_PORT: 2181
+#       ZOOKEEPER_TICK_TIME: 2000
+
+#   kafka:
+#     image: confluentinc/cp-kafka:latest
+#     depends_on:
+#       - zookeeper
+#     ports:
+#       - "9092:9092"
+#     environment:
+#       KAFKA_BROKER_ID: 1
+#       KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
+#       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
+#       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+#       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
+#   mongodb:
+#     image: mongo:6
+#     healthcheck:
+#       test: ["CMD", "mongo", "--eval", "db.adminCommand('ping')"]
+#       interval: 10s
+#       timeout: 5s
+#       retries: 5
+#     container_name: mongodb
+#     ports:
+#       - "27017:27017"
+#     volumes:
+#       - mongo-data:/data/db
+
+#   soil-saturation-sensor:
+#     build: .
+#     command: ["node", "src/sensors/soilSaturationSensor.js"]
+#     depends_on:
+#       - kafka
+#     networks:
+#       - default
+#   rainfall-sensor:
+#     build: .
+#     command: ["node", "src/sensors/rainfallSensor.js"]
+#     depends_on:
+#       - kafka
+#     networks:
+#       - default
+
+# volumes:
+#   mongo-data:
+
 #version: '3.8'
+# services:
+#   zookeeper:
+#     image: confluentinc/cp-zookeeper:latest
+#     ports:
+#       - "2181:2181"
+#     environment:
+#       ZOOKEEPER_CLIENT_PORT: 2181
+#       ZOOKEEPER_TICK_TIME: 2000
+
+#   kafka:
+#     image: confluentinc/cp-kafka:latest
+#     depends_on:
+#       - zookeeper
+#     ports:
+#       - "9092:9092"
+#     environment:
+#       KAFKA_CREATE_TOPICS: "sensor_data:3:1"
+#       KAFKA_BROKER_ID: 1
+#       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+#       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+#       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+#     networks:
+#       - kafka-network
+
+#   mongodb:
+#     image: mongo:6
+#     ports:
+#       - "27017:27017"
+#     networks:
+#       - kafka-network
+
+#   metabase:
+#     image: metabase/metabase:latest
+#     ports:
+#       - "3001:3000"
+#     networks:
+#       - kafka-network
+
+#   rainfall-sensor:
+#     build:
+#       context: ./src/sensors
+#       dockerfile: ../../Dockerfile
+#     depends_on:
+#       - kafka
+#     networks:
+#       - kafka-network
+#     command: ["node", "rainfallSensor.js"]
+
+#   soil-saturation-sensor:
+#     build:
+#       context: ./src/sensors
+#       dockerfile: ../../Dockerfile
+#     depends_on:
+#       - kafka
+#     networks:
+#       - kafka-network
+#     command: ["node", "soilSaturationSensor.js"]
+
+
+#   flood_management_app:
+#     build: .
+#     depends_on:
+#       - kafka
+#       - mongodb
+#     ports:
+#       - "3000:3000"
+#     networks:
+#       - kafka-network
+
+# networks:
+#   kafka-network:
+#     driver: bridge
+
+networks:
+  kafka-network:
+    driver: bridge
 
 services:
-  app:
-    build:
-      context: .
-    container_name: flood_management_app
-    ports:
-      - "3000:3000"
-    volumes:
-      - ./src:/usr/src/app
-      - .:/usr/src/app
-      - /usr/src/app/node_modules
-    depends_on:
-      - mongodb
-    environment:
-      MONGO_URI: mongodb://mongodb:27017/flood_management
-
   zookeeper:
     image: confluentinc/cp-zookeeper:latest
     container_name: zookeeper
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
+    networks:
+      - kafka-network
+    ports:
+      - "2181:2181"
 
   kafka:
-    image: confluentinc/cp-kafka:latest
+    image: confluentinc/cp-kafka
+    container_name: kafka
+    networks:
+      - kafka-network
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
     depends_on:
       - zookeeper
     ports:
       - "9092:9092"
-    environment:
-      KAFKA_BROKER_ID: 1
-      KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
 
-  mongodb:
+  mongo:
     image: mongo:6
-    healthcheck:
-      test: ["CMD", "mongo", "--eval", "db.adminCommand('ping')"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    container_name: mongodb
+    container_name: mongo
+    networks:
+      - kafka-network
     ports:
       - "27017:27017"
-    volumes:
-      - mongo-data:/data/db
+
+  rainfall-sensor:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ["node", "src/sensors/rainfallSensor.js"]
+    depends_on:
+      - kafka
+    networks:
+      - kafka-network
 
   soil-saturation-sensor:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
     command: ["node", "src/sensors/soilSaturationSensor.js"]
     depends_on:
       - kafka
     networks:
-      - default
+      - kafka-network
 
-volumes:
-  mongo-data:
+  flood_management_app:
+    build:
+      context: .
+    networks:
+      - kafka-network
+    ports:
+      - "3000:3000"
+
+# services:
+#   flood_management_app:
+#     build:
+#       context: .
+#       dockerfile: Dockerfile
+#     ports:
+#       - "3000:3000"
+#     depends_on:
+#       - kafka
+#       - mongo
+#     networks:
+#       - kafka-network
+
+#   rainfall-sensor:
+#     build:
+#       context: .
+#       dockerfile: Dockerfile
+#     command: ["node", "src/sensors/rainfallSensor.js"]
+#     depends_on:
+#       - kafka
+#     networks:
+#       - kafka-network
+
+#   soil-saturation-sensor:
+#     build:
+#       context: .
+#       dockerfile: Dockerfile
+#     command: ["node", "src/sensors/soilSaturationSensor.js"]
+#     depends_on:
+#       - kafka
+#     networks:
+#       - kafka-network
+
+#   kafka:
+#     image: confluentinc/cp-kafka:latest
+#     container_name: kafka
+#     ports:
+#       - "9092:9092"
+#     environment:
+#       KAFKA_BROKER_ID: 1
+#       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+#       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+#       KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
+#       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+#     depends_on:
+#       - zookeeper
+#     networks:
+#       - kafka-network
+
+
+#   mongo:
+#     image: mongo:6
+#     container_name: mongo
+#     ports:
+#       - "27017:27017"
+#     networks:
+#       - kafka-network
+
+#   zookeeper:
+#     image: confluentinc/cp-zookeeper:latest
+#     ports:
+#       - "2181:2181"
+#     environment:
+#       ZOOKEEPER_CLIENT_PORT: 2181
+#     networks:
+#       - kafka-network
