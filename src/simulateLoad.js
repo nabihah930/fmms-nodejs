@@ -26,7 +26,7 @@ const simulateSensorLoad = async (sensorType, region) => {
 
 const simulateLoad = async () => {
   const sensorTypes = ['waterLevel', 'cumulativeRainfall', 'riverFlowVelocity', 'soilSaturation', 'windSpeedDirection'];
-  const regions = Array.from({ length: 10 }, (_, i) => `region${i + 1}`);
+  const regions = Array.from({ length: 750 }, (_, i) => `region${i + 1}`);
 
   // Simulate all sensors
   const promises = [];

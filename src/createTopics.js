@@ -7,12 +7,12 @@ const createTopics = async (batchSize = 100) => {
       
         //Create topics for each sensor type and region
         const sensorTypes = ['waterLevel', 'cumulativeRainfall', 'riverFlowVelocity', 'soilSaturation', 'windSpeedDirection'];
-        const regions = Array.from({ length: 10 }, (_, i) => `region${i + 1}`);
+        const regions = Array.from({ length: 750 }, (_, i) => `region${i + 1}`);
       
         const topics = sensorTypes.flatMap(sensor =>
           regions.map(region => ({
             topic: `${region}${sensor}`,
-            numPartitions: 1, // Adjust partitions based on hardware
+            numPartitions: 10, // Adjust partitions based on hardware
             replicationFactor: 1,
           }))
         );
