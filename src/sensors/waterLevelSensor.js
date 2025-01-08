@@ -1,4 +1,5 @@
 import { producer } from '../kafka.js';
+import { generateValue } from '../util/helpers.js';
 import { isThresholdBreached } from '../thresholdEvaluator.js';
 import eventEmitter from '../eventEmitter.js';
 
@@ -6,7 +7,12 @@ import eventEmitter from '../eventEmitter.js';
 let interval = 100;
 
 const simulateWaterLevel = async () => {
-  const waterLevel = (Math.random() * 10 + 1).toFixed(2);
+  // const waterLevel = (Math.random() * 10 + 1).toFixed(2);
+  const waterLevel = generateValue(
+    (threshold) => (Math.random() * threshold).toFixed(2),
+    (threshold) => (threshold + Math.random() * 5).toFixed(2),
+    6
+  );
   const region = `region${Math.floor(Math.random() * 10) + 1}`; // Random region for testing
   const topic = `${region}waterLevel`
 

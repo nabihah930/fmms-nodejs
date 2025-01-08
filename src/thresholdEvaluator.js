@@ -1,6 +1,12 @@
 import fs from 'fs/promises';
 
-let thresholds = {};
+let thresholds = {
+  waterLevel: 6,
+  cumulativeRainfall: 100,
+  riverFlowVelocity: 2.5,
+  soilSaturation: 75,
+  windSpeedDirection: 70
+};
 
 export const loadThresholds = async () => {
   try {

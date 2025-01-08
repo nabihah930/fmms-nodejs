@@ -7,7 +7,12 @@ import eventEmitter from '../eventEmitter.js';
 let interval = 300000;
 
 const simulateRainfall = async () => {
-    const cumulativeRainfall = (Math.random() * 5 + 0.1).toFixed(2);
+    // const cumulativeRainfall = (Math.random() * 5 + 0.1).toFixed(2);
+    const cumulativeRainfall = generateValue(
+        (threshold) => (Math.random() * (threshold / 2)).toFixed(2), // Within range
+        (threshold) => (threshold / 2 + Math.random() * (threshold / 2)).toFixed(2), // Exceed range
+        100
+    );
     const region = `region${Math.floor(Math.random() * 10) + 1}`; // Random region for testing
     const topic = `${region}cumulativeRainfall`;
 
