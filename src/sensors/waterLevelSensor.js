@@ -12,8 +12,8 @@ const simulateWaterLevel = async () => {
 
   // Check if water level exceeds threshold
   const breached = isThresholdBreached('waterLevel', parseFloat(waterLevel));
-
   console.log(`\nTopic: ${topic} - Breached: ${breached}\n`);
+
   // Adjust frequency based on threshold breach
   if (breached && interval !== 120000) {
     interval = 120000;
@@ -22,7 +22,8 @@ const simulateWaterLevel = async () => {
       type: 'waterLevel',
       value: waterLevel,
       timestamp: Date.now(),
-      region
+      region,
+      message: `Water level threshold breached in ${region} on ${new Date().toISOString()}.`
     });
     
     resetInterval();

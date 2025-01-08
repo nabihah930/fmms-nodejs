@@ -15,6 +15,7 @@ eventEmitter.on('thresholdBreached', async (data) => {
             return;
         }
 
+        console.log('\n\n', data);
         const alert = new AlertModel(data);
         await alert.save();
         console.log(`Saved alert for ${data.type} to database.`);

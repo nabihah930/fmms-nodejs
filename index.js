@@ -3,6 +3,7 @@ import startApiServer from './src/api.js';
 import createTopics from './src/createTopics.js';
 import startConsumer from './src/dataProcessor.js';
 import { producer } from './src/kafka.js';
+import './src/alertHandler.js'
 import './src/sensors/waterLevelSensor.js';
 import './src/sensors/riverFlowSensor.js';
 import './src/sensors/rainfallSensor.js';

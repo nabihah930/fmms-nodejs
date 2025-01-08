@@ -6,7 +6,8 @@ const alertSchema = new mongoose.Schema({
   value: { type: mongoose.Schema.Types.Mixed, required: true },
   timestamp: { type: Date, default: Date.now },
   region: { type: String, required: true },
-  resolved: { type: mongoose.Schema.Types.Boolean, default: false }
+  resolved: { type: mongoose.Schema.Types.Boolean, default: false },
+  message: { type: String, required: true },
 }, { collection: 'alerts' });
 
 const AlertModel = mongoose.model('Alerts', alertSchema);
