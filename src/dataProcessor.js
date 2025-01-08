@@ -1,194 +1,144 @@
 // import { consumer } from './kafka.js';
-// import mongoose from 'mongoose';
+// import SensorDataModel from './models/SensorDataModel.js';
 
-// // UserRegistration Schema and Model
-// const userRegistrationSchema = new mongoose.Schema({
-//     username: { type: String, required: true },
-//     email: { type: String, required: true },
-//     timestamp: { type: Number, required: true },
-// });
-// const UserRegistration = mongoose.model('user_registered', userRegistrationSchema);
-
-// // SensorData Schema and Model
-// const sensorDataSchema = new mongoose.Schema({
-//     type: { type: String, required: true },
-//     value: { type: Number, required: true },
-//     timestamp: { type: Number, required: true },
-// });
-// const SensorData = mongoose.model('sensor_data', sensorDataSchema);
-
-// const processUserRegistration = async (message) => {
+// const startConsumer = async () => {
 //     try {
-//         console.log(`🔵 Received user registration message: ${JSON.stringify(message)}`);
-//         const user = new UserRegistration(message);
-//         await user.save();
-//         console.log('✅ User registration saved to MongoDB:', message);
-//     } catch (error) {
-//         console.error('🔴 Error saving user registration to MongoDB:', error.message);
-//     }
-// };
-
-// const processSensorData = async () => {
-//     try {
-//         console.log('🔵 Starting Kafka consumer for sensor data...');
-//         await consumer.subscribe({ topic: 'sensor_data', fromBeginning: true });
-
-//         await consumer.run({
-//             eachMessage: async ({ topic, partition, message }) => {
-//                 const parsedMessage = JSON.parse(message.value.toString());
-//                 console.log(`🔵 Received sensor data: ${JSON.stringify(parsedMessage)}`);
-
-//                 try {
-//                     // Save the sensor data to MongoDB
-//                     const sensorData = new SensorData(parsedMessage);
-//                     await sensorData.save();
-//                     console.log('✅ Sensor data saved to MongoDB:', parsedMessage);
-//                 } catch (dbError) {
-//                     console.error('🔴 Error saving sensor data to MongoDB:', dbError.message);
-//                 }
-//             },
-//         });
-//     } catch (error) {
-//         console.error('🔴 Error in Kafka consumer:', error.message);
-//     }
-// };
-
-// const processSensorData = async () => {
-//     try {
-//         console.log('🔵 Starting Kafka consumer for sensor data...');
-//         await consumer.subscribe({ topic: 'soil_saturation', fromBeginning: true });
-//         await consumer.subscribe({ topic: 'rainfall', fromBeginning: true });
-//         await consumer.subscribe({ topic: 'river_flow', fromBeginning: true });
-
-//         await consumer.run({
-//             eachMessage: async ({ topic, partition, message }) => {
-//                 const parsedMessage = JSON.parse(message.value.toString());
-//                 console.log(`🔵 Received message from ${topic}:`, parsedMessage);
-
-//                 try {
-//                     const sensorData = new SensorData(parsedMessage);
-//                     await sensorData.save();
-//                     console.log('✅ Sensor data saved to MongoDB:', parsedMessage);
-//                 } catch (dbError) {
-//                     console.error('🔴 Error saving sensor data to MongoDB:', dbError.message);
-//                 }
-//             },
-//         });
-//     } catch (error) {
-//         console.error('🔴 Error in Kafka consumer:', error.message);
-//     }
-// };
-
-//-------
-
-// import SensorData from './models/SensorDataModel.js';
-
-// const processSensorData = async () => {
-//     try {
-//         console.log('🔵 Starting Kafka consumer for sensor data...');
-//         await consumer.subscribe({ topic: 'sensor_data', fromBeginning: true });
-
-//         await consumer.run({
-//             eachMessage: async ({ topic, partition, message }) => {
-//                 const parsedMessage = JSON.parse(message.value.toString());
-//                 console.log(`🔵 Received message: ${JSON.stringify(parsedMessage)}`);
-
-//                 try {
-//                     const sensorData = new SensorData(parsedMessage);
-//                     await sensorData.save();
-//                     console.log('✅ Sensor data saved to MongoDB:', parsedMessage);
-//                 } catch (dbError) {
-//                     console.error('🔴 Error saving sensor data to MongoDB:', dbError.message);
-//                 }
-//             },
-//         });
-//     } catch (error) {
-//         console.error('🔴 Error in Kafka consumer:', error.message);
-//     }
-// };
-
-
-
-// const saveRainfallData = async (data) => {
-//     // Example MongoDB save logic for rainfall
-//     try {
-//         const Rainfall = mongoose.model('rainfall_data', yourRainfallSchema);
-//         await new Rainfall(data).save();
-//         console.log('✅ Rainfall data saved to MongoDB:', data);
-//     } catch (error) {
-//         console.error('🔴 Error saving rainfall data:', error.message);
-//     }
-// };
-
-// const saveSoilData = async (data) => {
-//     // Example MongoDB save logic for soil saturation
-//     try {
-//         const SoilData = mongoose.model('soil_data', yourSoilSchema);
-//         await new SoilData(data).save();
-//         console.log('✅ Soil saturation data saved to MongoDB:', data);
-//     } catch (error) {
-//         console.error('🔴 Error saving soil data:', error.message);
-//     }
-// };
-
-
-// const runConsumer = async () => {
-//     try {
-//         console.log('🟢 Starting Kafka consumer...');
 //         await consumer.connect();
-
-//         //await consumer.subscribe({ topic: 'user-registered', fromBeginning: true });
-//         await consumer.subscribe({ topic: 'sensor_data', fromBeginning: true });
-
+//         const sensorTypes = ['waterLevel', 'cumulativeRainfall', 'riverFlowVelocity', 'soilSaturation', 'windSpeedDirection'];
+//         const regions = Array.from({ length: 150 }, (_, i) => `region${i + 1}`);
+        
+//         const topics = sensorTypes.flatMap(sensor =>
+//             regions.map(region => `${region}${sensor}`)
+//         );
+        
+//         try {
+//             await consumer.subscribe({ topics });
+//         } catch (error) {
+//             console.error('🔴 Error subscribing to Kafka topics:', error.message);
+//             throw error;
+//         }
+        
 //         await consumer.run({
-//             eachMessage: async ({ topic, partition, message }) => {
-//                 const parsedMessage = JSON.parse(message.value.toString());
-
-//                 if (topic === 'user-registered') {
-//                     await processUserRegistration(parsedMessage);
-//                 } else if (topic === 'sensor_data') {
-//                     await processSensorData(parsedMessage);
-//                 } else {
-//                     console.warn(`🟠 Unknown topic: ${topic}`);
+//             eachBatch: async ({ batch }) => {
+//                 const sensorDataBatch = batch.messages.map(({ value }) => JSON.parse(value.toString()));
+//                 console.log(`\n\nSensor Data Batch: `, sensorDataBatch);
+//                 try {
+//                     await SensorDataModel.insertMany(sensorDataBatch, { ordered: false });
+//                     console.log(`✔ Batch of ${sensorDataBatch.length} messages inserted in MongoDB.`);
+//                 } catch (error) {
+//                     console.error('🔴 Error inserting message batch in MongoDB:', error.message);
+//                     throw error;
 //                 }
 //             },
 //         });
 
-//         console.log('✅ Kafka consumer is running and listening to topics...');
+//         console.log(`✔ Kafka consumer running`);
 //     } catch (error) {
-//         console.error('🔴 Error in Kafka consumer:', error.message);
+//         console.error('🔴 Error:', error.message);
 //     }
 // };
 
-// export default runConsumer;
+// export default startConsumer;
 
-import { consumer }  from './kafka.js';
-import SensorData from './models/SensorDataModel.js';
+import { consumer } from './kafka.js';
+import SensorDataModel from './models/SensorDataModel.js';
 
-const processSensorData = async () => {
+const startConsumer = async () => {
     try {
-        console.log('🔵 Starting Kafka consumer for sensor data...');
-        await consumer.subscribe({ topic: 'sensor_data', fromBeginning: true });
+        await consumer.connect();
+        const sensorTypes = ['waterLevel', 'cumulativeRainfall', 'riverFlowVelocity', 'soilSaturation', 'windSpeedDirection'];
+        const regions = Array.from({ length: 250 }, (_, i) => `region${i + 1}`);
+
+        const topics = sensorTypes.flatMap(sensor =>
+            regions.map(region => `${region}${sensor}`)
+        );
+
+        try {
+            await consumer.subscribe({ topics });
+        } catch (error) {
+            console.error('🔴 Error subscribing to Kafka topics:', error.message);
+            throw error;
+        }
 
         await consumer.run({
-            eachMessage: async ({ topic, partition, message }) => {
-                const parsedMessage = JSON.parse(message.value.toString());
-                console.log('🔵 Received message:', parsedMessage);
+            eachBatch: async ({ batch }) => {
+                const messages = batch.messages.map(({ value }) => JSON.parse(value.toString()));
+                console.log(`\n\nTotal Messages in Batch: ${messages.length}`);
 
-                try {
-                    const sensorData = new SensorData(parsedMessage);
-                    await sensorData.save();
-                    console.log('✅ Saved to MongoDB:', parsedMessage);
-                } catch (dbError) {
-                    console.error('🔴 Error saving to MongoDB:', dbError.message);
+                // Break the batch into chunks of 50 messages
+                for (let i = 0; i < messages.length; i += 50) {
+                    const sensorDataBatch = messages.slice(i, i + 50); // Take 50 messages at a time
+                    console.log(`Processing Batch of ${sensorDataBatch.length} Messages:`, sensorDataBatch);
+
+                    try {
+                        await SensorDataModel.insertMany(sensorDataBatch, { ordered: false });
+                        console.log(`✔ Batch of ${sensorDataBatch.length} messages inserted in MongoDB.`);
+                    } catch (error) {
+                        console.error('🔴 Error inserting message batch in MongoDB:', error.message);
+                    }
                 }
             },
         });
+
+        console.log(`✔ Kafka consumer running`);
     } catch (error) {
-        console.error('🔴 Error in Kafka consumer:', error.message);
+        console.error('🔴 Error:', error.message);
     }
 };
 
-export default processSensorData;
+export default startConsumer;
 
+// import { consumer } from './kafka.js';
+// import SensorDataModel from './models/SensorDataModel.js';
+
+// const startConsumer = async () => {
+//     try {
+//         await consumer.connect();
+//         const sensorTypes = ['waterLevel', 'cumulativeRainfall', 'riverFlowVelocity', 'soilSaturation', 'windSpeedDirection'];
+//         const regions = Array.from({ length: 150 }, (_, i) => `region${i + 1}`);
+        
+//         const topics = sensorTypes.flatMap(sensor =>
+//             regions.map(region => `${region}${sensor}`)
+//         );
+        
+//         try {
+//             await consumer.subscribe({ topics });
+//         } catch (error) {
+//             console.error('🔴 Error subscribing to Kafka topics:', error.message);
+//             throw error;
+//         }
+        
+//         await consumer.run({
+//             eachBatch: async ({ batch }) => {
+//                 const sensorDataBatch = batch.messages.map(({ value }) => JSON.parse(value.toString()));
+//                 console.log(`\n\nSensor Data Batch: `, sensorDataBatch);
+                
+//                 // Process smaller sub-batches for MongoDB
+//                 const batchSize = 50; // Customize batch size
+//                 for (let i = 0; i < sensorDataBatch.length; i += batchSize) {
+//                     const subBatch = sensorDataBatch.slice(i, i + batchSize);
+//                     try {
+//                         await SensorDataModel.insertMany(subBatch, { ordered: false, writeConcern: { w: 1 } });
+//                         console.log(`✔ Sub-batch of ${subBatch.length} messages inserted in MongoDB.`);
+//                     } catch (error) {
+//                         console.error(`🔴 Error inserting sub-batch:`, error.message);
+//                     }
+//                 }
+//                 // try {
+//                 //     await SensorDataModel.insertMany(sensorDataBatch, { ordered: false, writeConcern: { w: 1 } });
+//                 //     console.log(`✔ Batch of ${sensorDataBatch.length} messages inserted in MongoDB.`);
+//                 // } catch (error) {
+//                 //     console.error('🔴 Error inserting message batch in MongoDB:', error.message);
+//                 //     throw error;
+//                 // }
+//             },
+//         });
+
+//         console.log(`✔ Kafka consumer running`);
+//     } catch (error) {
+//         console.error('🔴 Error:', error.message);
+//     }
+// };
+
+// export default startConsumer;
 

@@ -1,27 +1,14 @@
-// import mongoose from 'mongoose';
-
-// export const connectDB = async () => {
-//     try {
-//         await mongoose.connect('mongodb://mongo:27017/flood_management', {
-//             useNewUrlParser: true,
-//             useUnifiedTopology: true,
-//         });
-//         console.log('✅ MongoDB connected successfully.');
-//     } catch (error) {
-//         console.error('🔴 MongoDB connection error:', error.message);
-//         process.exit(1);
-//     }
-// };
-
 import mongoose from 'mongoose';
 
-const connectDB = async () => {
+const connectToDatabase = async () => {
     try {
-        await mongoose.connect('mongodb://mongo:27017/flood_management');
-        console.log('✅ MongoDB connected successfully.');
+        // TO-DO: Save constants to config file
+        const mongoURI = process.env.MONGO_URI;
+        await mongoose.connect(mongoURI);
+        console.log('🟢 Connected to MongoDB 🟢');
     } catch (error) {
-        console.error('🔴 MongoDB connection error:', error.message);
+        console.error('🔴 Error connecting to MongoDB: ', error);
     }
 };
 
-export default connectDB;
+export default connectToDatabase;

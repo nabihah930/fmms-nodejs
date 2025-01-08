@@ -1,47 +1,33 @@
-// import { sendMessage } from '../kafka.js'; 
-
-// const simulateSoilSaturation = async () => {
-//     const soilSaturation = (Math.random() * 20 + 40).toFixed(2);
-//     const timestamp = Date.now();
-
-//     const message = {
-//         type: 'soilSaturation',
-//         value: soilSaturation,
-//         timestamp: timestamp,
-//     };
-
-//     console.log('🟡 Simulated soil saturation data:', message);
-
-//     try {
-//         await sendMessage('sensor_data', message);
-//         console.log('✅ Soil saturation data sent to Kafka successfully.');
-//     } catch (error) {
-//         console.error('🔴 Error sending soil saturation data to Kafka:', error.message);
-//     }
-// };
-
-// const runSensor = () => {
-//     console.log('🟢 Soil saturation sensor started. Sending data every 60 seconds...');
-//     setInterval(simulateSoilSaturation, 60000); 
-// };
-
-// runSensor();
-
-import { sendMessage } from '../kafka.js';
+import { producer } from '../kafka.js';
+// import eventEmitter from '../eventEmitter.js';
 
 const simulateSoilSaturation = async () => {
-    const data = {
-        type: 'soilSaturation',
-        value: (Math.random() * 20 + 40).toFixed(2),
-        timestamp: Date.now(),
-    };
+    const soilSaturation = (Math.random() * 20 + 40).toFixed(2);
+    const region = `region${Math.floor(Math.random() * 10) + 1}`; // Random region for testing
+    const topic = `${region}soilSaturation`;
+
     try {
-        await sendMessage('sensor_data', data);
-        console.log('✅ Soil saturation data sent to Kafka:', data);
+        await producer.send({
+        topic,
+        messages: [
+            {
+            value: JSON.stringify({
+                type: 'soilSaturation',
+                value: soilSaturation,
+                region,
+                timestamp: Date.now(),
+            }),
+            },
+        ],
+        });
+
+        console.log(`✔ Sent soil saturation data to Kafka topic ${topic}`);
     } catch (error) {
-        console.error('🔴 Error sending soil saturation data:', error.message);
+        console.error('🔴 Error sending data to Kafka topic:', error.message);
     }
 };
 
-setInterval(simulateSoilSaturation, 10000); // 1 message per second
+// Simulate data every 5 minutes
+setInterval(simulateSoilSaturation, 100);
 
+export default simulateSoilSaturation;

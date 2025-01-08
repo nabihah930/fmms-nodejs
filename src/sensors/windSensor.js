@@ -1,47 +1,33 @@
-// import { sendMessage } from '../kafka.js'; 
-
-// const simulateWindSpeedDirection = async () => {
-//     // Random wind speed & direction in km/h
-//     const windSpeedDirection = (Math.random() * 5 + 0.1).toFixed(2);
-//     const timestamp = Date.now();
-
-//     const message = {
-//         type: 'windSpeedDirection',
-//         value: windSpeedDirection,
-//         timestamp: timestamp,
-//     };
-
-//     console.log('🟡 Simulated wind speed data:', message);
-
-//     try {
-//         await sendMessage('sensor_data', message);
-//         console.log('✅ Wind speed data sent to Kafka successfully.');
-//     } catch (error) {
-//         console.error('🔴 Error sending wind speed data to Kafka:', error.message);
-//     }
-// };
-
-// const runSensor = () => {
-//     console.log('🟢 Wind speed sensor started. Sending data every 60 seconds...');
-//     setInterval(simulateWindSpeedDirection, 60000); 
-// };
-
-// runSensor();
-
-import { sendMessage } from '../kafka.js';
+import { producer } from '../kafka.js';
+// import eventEmitter from '../eventEmitter.js';
 
 const simulateWindSpeedDirection = async () => {
-    const data = {
-        type: 'windSpeedDirection',
-        value: (Math.random() * 5 + 0.1).toFixed(2),
-        timestamp: Date.now(),
-    };
+    const windSpeedDirection = (Math.random() * 5 + 0.1).toFixed(2);
+    const region = `region${Math.floor(Math.random() * 10) + 1}`; // Random region for testing
+    const topic = `${region}windSpeedDirection`;
+
     try {
-        await sendMessage('sensor_data', data);
-        console.log('✅ Wind speed data sent to Kafka:', data);
+        await producer.send({
+            topic,
+            messages: [
+                {
+                    value: JSON.stringify({
+                        type: 'windSpeedDirection',
+                        value: windSpeedDirection,
+                        region,
+                        timestamp: Date.now(),
+                    }),
+                },
+            ],
+        });
+
+        console.log(`✔ Sent wind speed data to Kafka topic ${topic}`);
     } catch (error) {
-        console.error('🔴 Error sending wind speed data:', error.message);
+        console.error('🔴 Error sending data to Kafka topic:', error.message);
     }
 };
 
-setInterval(simulateWindSpeedDirection, 1000); // 1 message per second
+// Simulate data every 5 minutes
+setInterval(simulateWindSpeedDirection, 100);
+
+export default simulateWindSpeedDirection;

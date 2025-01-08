@@ -1,46 +1,67 @@
-// import { sendMessage } from '../kafka.js'; 
+import { producer } from '../kafka.js';
+import { isThresholdBreached } from '../thresholdEvaluator.js';
+import eventEmitter from '../eventEmitter.js';
 
-// const simulateWaterLevel = async () => {
-//     const waterLevel = (Math.random() * 10 + 1).toFixed(2);
-//     const timestamp = Date.now();
-
-//     const message = {
-//         type: 'waterLevel',
-//         value: waterLevel,
-//         timestamp: timestamp,
-//     };
-
-//     console.log('🟡 Simulated water level data:', message);
-
-//     try {
-//         await sendMessage('sensor_data', message);
-//         console.log('✅ Water level data sent to Kafka successfully.');
-//     } catch (error) {
-//         console.error('🔴 Error sending water level data to Kafka:', error.message);
-//     }
-// };
-
-// const runSensor = () => {
-//     console.log('🟢 Water level sensor started. Sending data every 60 seconds...');
-//     setInterval(simulateWaterLevel, 60000); 
-// };
-
-// runSensor();
-
-import { sendMessage } from '../kafka.js';
+// Default: 5 minutes
+let interval = 100;
 
 const simulateWaterLevel = async () => {
-    const data = {
-        type: 'waterLevel',
-        value: (Math.random() * 10 + 1).toFixed(2),
-        timestamp: Date.now(),
-    };
-    try {
-        await sendMessage('sensor_data', data);
-        console.log('✅ Water level data sent to Kafka:', data);
-    } catch (error) {
-        console.error('🔴 Error sending water level data:', error.message);
-    }
+  const waterLevel = (Math.random() * 10 + 1).toFixed(2);
+  const region = `region${Math.floor(Math.random() * 10) + 1}`; // Random region for testing
+  const topic = `${region}waterLevel`
+
+  // Check if water level exceeds threshold
+  const breached = isThresholdBreached('waterLevel', parseFloat(waterLevel));
+
+  console.log(`\nTopic: ${topic} - Breached: ${breached}\n`);
+  // Adjust frequency based on threshold breach
+  if (breached && interval !== 120000) {
+    interval = 120000;
+    console.log('⚠ Water level threshold breached! Increasing frequency to 2 minutes.');
+    eventEmitter.emit('thresholdBreached', {
+      type: 'waterLevel',
+      value: waterLevel,
+      timestamp: Date.now(),
+      region
+    });
+    
+    resetInterval();
+  } else if (!breached && interval !== 100) {
+    interval = 100;
+    console.log('✔ Water level back to normal. Resetting frequency to 5 minutes.');
+    resetInterval();
+  }
+
+  try {
+    await producer.send({
+      topic,
+      messages: [
+        {
+          value: JSON.stringify({
+            type: 'waterLevel',
+            value: waterLevel,
+            region,
+            timestamp: Date.now(),
+          }),
+        },
+      ],
+    });
+
+    console.log(`✔ Sent water level data to Kafka topic ${topic}`);
+  } catch (error) {
+    console.error(`🔴 Error sending data to Kafka topic: ${topic}\nError: `, error.message);
+  }
 };
 
-setInterval(simulateWaterLevel, 1000); // 1 message per second
+// Reset interval when the frequency is adjusted
+let intervalId = setInterval(simulateWaterLevel, interval);
+
+const resetInterval = () => {
+  clearInterval(intervalId);
+  intervalId = setInterval(simulateWaterLevel, interval);
+};
+
+// // Simulate data every 5 minutes
+// setInterval(simulateWaterLevel, 60000);
+
+export default simulateWaterLevel;

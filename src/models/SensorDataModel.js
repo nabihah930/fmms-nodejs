@@ -1,21 +1,13 @@
-// import mongoose from 'mongoose';
-
-// const sensorDataSchema = new mongoose.Schema({
-//     type: { type: String, required: true },
-//     value: { type: Number, required: true },
-//     timestamp: { type: Number, required: true },
-// });
-
-// const SensorData = mongoose.model('sensor_data', sensorDataSchema);
-// export default SensorData;
 import mongoose from 'mongoose';
 
+// Add operational status
 const sensorDataSchema = new mongoose.Schema({
-    type: { type: String, required: true },
-    value: { type: String, required: true },
-    timestamp: { type: Number, required: true },
-});
+  type: { type: String, required: true },
+  value: { type: mongoose.Schema.Types.Mixed, required: true },
+  timestamp: { type: Date, default: Date.now },
+  region: { type: String, required: true },
+}, { collection: 'sensor_data' });
 
-const SensorData = mongoose.model('SensorData', sensorDataSchema);
+const SensorDataModel = mongoose.model('SensorData', sensorDataSchema);
 
-export default SensorData;
+export default SensorDataModel;
