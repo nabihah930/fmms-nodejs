@@ -4,7 +4,7 @@ import { isThresholdBreached } from '../thresholdEvaluator.js';
 import eventEmitter from '../eventEmitter.js';
 
 // Default: 5 minutes
-let interval = 300000;
+let interval = 100;
 
 const simulateRainfall = async () => {
     // const cumulativeRainfall = (Math.random() * 5 + 0.1).toFixed(2);
@@ -32,8 +32,8 @@ const simulateRainfall = async () => {
         });
 
         resetInterval();
-    } else if (!breached && interval !== 300000) {
-        interval = 300000;
+    } else if (!breached && interval !== 100) {
+        interval = 100;
         console.log('✔ Rainfall back to normal. Resetting frequency to 5 minutes.');
         resetInterval();
     }
